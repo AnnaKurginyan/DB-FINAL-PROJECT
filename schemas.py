@@ -1,46 +1,49 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional, List
 from datetime import date
 
-
 class ShipBase(BaseModel):
-    id: int
     name: str
-    ship_type: Optional[str] = None
-    captain: Optional[str] = None
-    home_port: Optional[int] = None  
-    water_displacement: Optional[int] = None
+    ship_type: Optional[str]
+    captain: Optional[str]
+    home_port: Optional[int]
+    water_displacement: Optional[int]
 
-
-class PortBase(BaseModel):
-    id: int
-    daily_price: Optional[int] = None
-    category: Optional[str] = None
-    name: str
-    country: str
-
-
-class VisitBase(BaseModel):
-    id: int
-    purpose: Optional[str] = None
-    arrival: date
-    departure: date
-    dock: Optional[int] = None
-    ship_id: int 
-    port_id: int 
-
+class ShipCreate(ShipBase):
+    pass
 
 class ShipDetail(ShipBase):
-    port: Optional[PortBase] = None  
-    visits: List["VisitBase"] = []   
+    id: int
+    class Config:
+        orm_mode = True
 
+class PortBase(BaseModel):
+    name: str
+    country: str
+    daily_price: Optional[int]
+    category: Optional[str]
+
+class PortCreate(PortBase):
+    pass
 
 class PortDetail(PortBase):
-    ships: List["ShipBase"] = []  
-    visits: List["VisitBase"] = []  
+    id: int
+    class Config:
+        orm_mode = True
 
+class VisitBase(BaseModel):
+    purpose: Optional[str]
+    arrival: date
+    departure: date
+    dock: Optional[int]
+    ship_id: int
+    port_id: int
+
+class VisitCreate(VisitBase):
+    pass
 
 class VisitDetail(VisitBase):
-    ship: Optional[ShipBase] = None  
-    port: Optional[PortBase] = None  
+    id: int
+    class Config:
+        orm_mode = True
 

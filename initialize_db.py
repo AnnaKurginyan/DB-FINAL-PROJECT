@@ -28,8 +28,8 @@ def create_database(db_name, db_owner, user, password, host='172.17.0.2', port=5
         print(f"Database already exists")
     
 
-    # cursor.close()
-    # conn.close()
+    cursor.close()
+    conn.close()
 
 db_name = 'Shipping'  
 db_owner = 'annaKURG'  
@@ -37,4 +37,3 @@ user = 'annaKURG'
 password = 'anna27'  
 create_database(db_name, db_owner, user, password)
 
-print("exav")
