@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-# from database import engine, Base, get_db
-from crud import Ship, Port, Visit
+from database import engine, Base, get_db
+from def_tables import Ship, Port, Visit
 from schemas import ShipCreate, ShipDetail, PortCreate, PortDetail, VisitCreate, VisitDetail
 
 app = FastAPI()
@@ -9,7 +9,7 @@ app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
 
-
+# SHIP
 @app.post("/ships/", response_model=ShipDetail)
 def create_ship(ship: ShipCreate, db: Session = Depends(get_db)):
     db_ship = Ship(**ship.dict())
@@ -22,14 +22,14 @@ def create_ship(ship: ShipCreate, db: Session = Depends(get_db)):
 def get_ship(ship_id: int, db: Session = Depends(get_db)):
     db_ship = db.query(Ship).filter(Ship.id == ship_id).first()
     if not db_ship:
-        raise HTTPException(status_code=404, detail="Ship not found")
+        raise HTTPException(status_code=404, detail="Корабль не найден")
     return db_ship
 
 @app.put("/ships/{ship_id}", response_model=ShipDetail)
 def update_ship(ship_id: int, ship: ShipCreate, db: Session = Depends(get_db)):
     db_ship = db.query(Ship).filter(Ship.id == ship_id).first()
     if not db_ship:
-        raise HTTPException(status_code=404, detail="Ship not found")
+        raise HTTPException(status_code=404, detail="Корабль не найден")
     for key, value in ship.dict().items():
         setattr(db_ship, key, value)
     db.commit()
@@ -40,8 +40,82 @@ def update_ship(ship_id: int, ship: ShipCreate, db: Session = Depends(get_db)):
 def delete_ship(ship_id: int, db: Session = Depends(get_db)):
     db_ship = db.query(Ship).filter(Ship.id == ship_id).first()
     if not db_ship:
-        raise HTTPException(status_code=404, detail="Ship not found")
+        raise HTTPException(status_code=404, detail="Корабль не найден")
     db.delete(db_ship)
     db.commit()
-    return {"message": "Ship deleted successfully"}
+    return {"message": "Данные о корабле удалены"}
+
+
+# PORT
+@app.post("/ports/", response_model=PortDetail)
+def create_port(port: PortCreate, db: Session = Depends(get_db)):
+    db_port = Port(**port.dict())
+    db.add(db_port)
+    db.commit()
+    db.refresh(db_port)
+    return db_port
+
+@app.get("/ports/{port_id}", response_model=PortDetail)
+def get_port(port_id: int, db: Session = Depends(get_db)):
+    db_port = db.query(Port).filter(Port.id == port_id).first()
+    if not db_port:
+        raise HTTPException(status_code=404, detail="Нет информации о запрашиваемом порте")
+    return db_port
+
+@app.put("/ports/{port_id}", response_model=PortDetail)
+def update_port(port_id: int, port: PortCreate, db: Session = Depends(get_db)):
+    db_port = db.query(Port).filter(Port.id == port_id).first()
+    if not db_port:
+        raise HTTPException(status_code=404, detail="Нет информации о запрашиваемом порте")
+    for key, value in port.dict().items():
+        setattr(db_port, key, value)
+    db.commit()
+    db.refresh(db_port)
+    return db_port
+
+@app.delete("/ports/{port_id}")
+def delete_port(port_id: int, db: Session = Depends(get_db)):
+    db_port = db.query(Port).filter(Port.id == port_id).first()
+    if not db_port:
+        raise HTTPException(status_code=404, detail="Нет информации о запрашиваемом порте")
+    db.delete(db_port)
+    db.commit()
+    return {"message": "Информация о порте удалена"}
+
+
+# VISIT
+@app.post("/visits/", response_model=VisitDetail)
+def create_visit(visit: VisitCreate, db: Session = Depends(get_db)):
+    db_visit = Visit(**visit.dict())
+    db.add(db_visit)
+    db.commit()
+    db.refresh(db_visit)
+    return db_visit
+
+@app.get("/visits/{visit_id}", response_model=VisitDetail)
+def get_visit(visit_id: int, db: Session = Depends(get_db)):
+    db_visit = db.query(Visit).filter(Visit.id == visit_id).first()
+    if not db_visit:
+        raise HTTPException(status_code=404, detail="Нет информации о посещении")
+    return db_visit
+
+@app.put("/visits/{visit_id}", response_model=VisitDetail)
+def update_visit(visit_id: int, visit: VisitCreate, db: Session = Depends(get_db)):
+    db_visit = db.query(Visit).filter(Visit.id == visit_id).first()
+    if not db_visit:
+        raise HTTPException(status_code=404, detail="Нет информации о посещении")
+    for key, value in visit.dict().items():
+        setattr(db_visit, key, value)
+    db.commit()
+    db.refresh(db_visit)
+    return db_visit
+
+@app.delete("/visits/{visit_id}")
+def delete_visit(visit_id: int, db: Session = Depends(get_db)):
+    db_visit = db.query(Visit).filter(Visit.id == visit_id).first()
+    if not db_visit:
+        raise HTTPException(status_code=404, detail="Нет информации о посещении")
+    db.delete(db_visit)
+    db.commit()
+    return {"message": "Информация о посещении удалена"}
 
