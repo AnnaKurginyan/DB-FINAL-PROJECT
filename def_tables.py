@@ -11,7 +11,7 @@ class Ship(Base):
     name = Column(String(100), nullable=False)
     ship_type = Column(String(100))
     captain = Column(String(100))
-    home_port = Column(Integer, ForeignKey('port.id'))  # Внешний ключ на port.id
+    home_port = Column(Integer, ForeignKey('port.id'))  
     water_displacement = Column(Integer)
 
     port = relationship("Port", back_populates="ships")
@@ -35,7 +35,8 @@ class Port(Base):
     
 class Visit(Base):
     __tablename__ = 'visit'
-
+    
+    id = Column(Integer, primary_key=True, index=True)
     purpose = Column(String(100))
     arrival = Column(Date)
     departure = Column(Date)
