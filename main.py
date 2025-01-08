@@ -1,11 +1,11 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func, desc
 from database import engine, Base, get_db
 from def_tables import Ship, Port, Visit
 from schemas import ShipCreate, ShipDetail, PortCreate, PortDetail, VisitCreate, VisitDetail
 
 app = FastAPI()
-
 
 Base.metadata.create_all(bind=engine)
 
@@ -119,3 +119,40 @@ def delete_visit(visit_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Информация о посещении удалена"}
 
+
+# select where
+@app.get("/ships/filter/")
+def get_ships_by_conditions(port_id: int, min_displacement: int, db: Session = Depends(get_db)):
+    return db.query(Ship).filter(
+        Ship.home_port == port_id, Ship.water_displacement > min_displacement
+    ).all()
+
+# join
+@app.get("/visits/details/")
+def get_visit_details(db: Session = Depends(get_db)):
+    return db.query(
+        Visit.id, Visit.purpose, Ship.name.label("ship_name"), Port.name.label("port_name")
+    ).join(Ship, Visit.ship_id == Ship.id).join(Port, Visit.port_id == Port.id).all()
+
+# update
+@app.put("/ships/update_home_port/")
+def update_ships_home_port(old_port_id: int, new_port_id: int, db: Session = Depends(get_db)):
+    updated = db.query(Ship).filter(Ship.home_port == old_port_id).update(
+        {Ship.home_port: new_port_id}, synchronize_session="fetch"
+    )
+    db.commit()
+    return {"updated_rows": updated}
+
+# group by
+@app.get("/ports/grouped_by_country/")
+def get_ports_grouped_by_country(db: Session = Depends(get_db)):
+    return db.query(
+        Port.country, func.count(Port.id).label("port_count")
+    ).group_by(Port.country).all()
+
+# sorting
+@app.get("/ships/sorted/")
+def get_ships_sorted(order: str = "asc", db: Session = Depends(get_db)):
+    if order.lower() == "desc":
+        return db.query(Ship).order_by(desc(Ship.name)).all()
+    return db.query(Ship).order_by(Ship.name).all()
