@@ -1,10 +1,3 @@
-"""Add index on visit purpose
-
-Revision ID: e1fa93fd61eb
-Revises: 1d49ba9b4131
-Create Date: 2025-01-13 11:47:17.677261
-
-"""
 from typing import Sequence, Union
 
 from alembic import op

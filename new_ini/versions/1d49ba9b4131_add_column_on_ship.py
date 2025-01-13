@@ -1,10 +1,3 @@
-"""Add column on ship
-
-Revision ID: 1d49ba9b4131
-Revises: 
-Create Date: 2025-01-13 11:45:32.408217
-
-"""
 from typing import Sequence, Union
 
 from alembic import op
