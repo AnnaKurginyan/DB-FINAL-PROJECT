@@ -1,29 +1,37 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
-from database import engine, Base, get_db
+from database import get_db
+from sqlalchemy import select
 from def_tables import Ship, Port, Visit
 from schemas import ShipCreate, ShipDetail, PortCreate, PortDetail, VisitCreate, VisitDetail
 
 app = FastAPI()
 
-Base.metadata.create_all(bind=engine)
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse(url="/docs")
 
 # SHIP
 @app.post("/ships/", response_model=ShipDetail)
 def create_ship(ship: ShipCreate, db: Session = Depends(get_db)):
-    db_ship = Ship(**ship.dict())
+    db_ship = Ship(**ship.model_dump())
     db.add(db_ship)
     db.commit()
     db.refresh(db_ship)
     return db_ship
 
-@app.get("/ships/{ship_id}", response_model=ShipDetail)
-def get_ship(ship_id: int, db: Session = Depends(get_db)):
-    db_ship = db.query(Ship).filter(Ship.id == ship_id).first()
-    if not db_ship:
-        raise HTTPException(status_code=404, detail="Корабль не найден")
-    return db_ship
+@app.get("/ships/", response_model=list[ShipDetail])
+def get_ship(db: Session = Depends(get_db), ship_id: int = None, water_displacement: int = None, page: int = 1, limit: int = 10):
+    db_ship = select(Ship).limit(limit).offset((page - 1) * limit)
+
+    if ship_id:
+        db_ship = db_ship.where(Ship.id == ship_id)
+    if water_displacement:
+        db_ship = db_ship.where(Ship.water_displacement >= water_displacement)
+   
+    return db.execute(db_ship).scalars().all()
 
 @app.put("/ships/{ship_id}", response_model=ShipDetail)
 def update_ship(ship_id: int, ship: ShipCreate, db: Session = Depends(get_db)):
@@ -156,3 +164,8 @@ def get_ships_sorted(order: str = "asc", db: Session = Depends(get_db)):
     if order.lower() == "desc":
         return db.query(Ship).order_by(desc(Ship.name)).all()
     return db.query(Ship).order_by(Ship.name).all()
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="localhost", port=8080)

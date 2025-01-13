@@ -2,7 +2,7 @@ import requests
 import random
 from datetime import datetime, timedelta
 
-API_URL = "http://127.0.0.1:8000"
+API_URL = "http://127.0.0.1:8080"
 
 SHIP_TYPES = ["Cargo", "Passenger", "Fishing", "Military", "Container", "Tanker", "Submarine"]
 PORT_CATEGORIES = ["International", "Domestic", "Military", "River", ]
